@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 import sqlite3
-import os
+from flask_cors import CORS  # Enable cross-origin requests
 
 app = Flask(__name__)
+CORS(app)  # Allow frontend requests
 
 DB_NAME = "data.db"
 
@@ -41,24 +42,23 @@ def get_entries():
 # API to add an entry
 @app.route('/add_entry', methods=['POST'])
 def add_entry():
-    data = request.json
-    entry_id = data.get('entry_id')
-    qr_code = data.get('qr_code')
-
-    if not entry_id or not qr_code:
-        return jsonify({"success": False, "message": "Invalid input"}), 400
-
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
     try:
+        data = request.json
+        entry_id = data.get('entry_id')
+        qr_code = data.get('qr_code')
+
+        if not entry_id or not qr_code:
+            return jsonify({"success": False, "message": "Invalid input"}), 400
+
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
         cursor.execute("INSERT INTO qr_codes (entry_id, qr_code) VALUES (?, ?)", (entry_id, qr_code))
         conn.commit()
-    except sqlite3.IntegrityError:
-        return jsonify({"success": False, "message": "Entry ID already exists"}), 400
-    finally:
         conn.close()
 
-    return jsonify({"success": True, "message": "Entry added successfully"})
+        return jsonify({"success": True, "message": "Entry added successfully"})
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "message": "Entry ID already exists"}), 400
 
 # API to delete an entry
 @app.route('/delete_entry/<entry_id>', methods=['DELETE'])
