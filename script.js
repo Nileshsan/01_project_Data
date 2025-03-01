@@ -75,3 +75,26 @@ async function deleteEntry(entry_id, row) {
         alert("Failed to delete entry.");
     }
 }
+
+fetch('https://project-data-qr.onrender.com', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key: 'value' })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+const API_URL = "https://qr-code-backend.onrender.com";
+
+// Example: adding an entry
+fetch(`${API_URL}/add_entry`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entry_id: idInput, qr_code: qrBase64 })
+})
+.then(response => response.json())
+.then(data => {
+    // Handle success
+})
+.catch(error => console.error("Error:", error));
