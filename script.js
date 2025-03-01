@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", fetchEntries);
 
+const API_URL = "http://127.0.0.1:5000"; // Change if hosted elsewhere
+
 // Function to add an entry to the table
 function addEntryToTable(entry_id, qr_code) {
     let table = document.getElementById("qrTable");
@@ -18,7 +20,9 @@ function addEntryToTable(entry_id, qr_code) {
     let deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
     deleteBtn.classList.add("delete-btn");
-    deleteBtn.onclick = function() { deleteEntry(entry_id, row); };
+    deleteBtn.onclick = function () {
+        deleteEntry(entry_id, row);
+    };
     deleteCell.appendChild(deleteBtn);
 }
 
@@ -33,13 +37,13 @@ async function addEntry() {
     }
 
     let reader = new FileReader();
-    reader.onloadend = async function() {
+    reader.onloadend = async function () {
         let qrBase64 = reader.result;
 
-        let response = await fetch('/add_entry', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ entry_id: idInput, qr_code: qrBase64 })
+        let response = await fetch(`${API_URL}/add_entry`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ entry_id: idInput, qr_code: qrBase64 }),
         });
 
         let result = await response.json();
@@ -55,46 +59,25 @@ async function addEntry() {
 
 // Fetch entries from Flask and display them
 async function fetchEntries() {
-    const response = await fetch('/get_entries');
+    const response = await fetch(`${API_URL}/get_entries`);
     const entries = await response.json();
 
     let tableBody = document.getElementById("qrTable");
-    tableBody.innerHTML = "";  
+    tableBody.innerHTML = "";
 
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
         addEntryToTable(entry.entry_id, entry.qr_code);
     });
 }
 
 // Function to delete an entry
 async function deleteEntry(entry_id, row) {
-    let response = await fetch(`/delete_entry/${entry_id}`, { method: 'DELETE' });
+    let response = await fetch(`${API_URL}/delete_entry/${entry_id}`, {
+        method: "DELETE",
+    });
     if (response.ok) {
         row.remove();
     } else {
         alert("Failed to delete entry.");
     }
 }
-
-fetch('https://project-data-qr.onrender.com', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key: 'value' })
-})
-.then(response => response.json())
-.then(data => console.log(data))
-.catch(error => console.error('Error:', error));
-
-const API_URL = "https://qr-code-backend.onrender.com";
-
-// Example: adding an entry
-fetch(`${API_URL}/add_entry`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ entry_id: idInput, qr_code: qrBase64 })
-})
-.then(response => response.json())
-.then(data => {
-    // Handle success
-})
-.catch(error => console.error("Error:", error));
